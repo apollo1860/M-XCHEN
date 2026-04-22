@@ -13,12 +13,12 @@
       --green: #6cbc49;
       --red: #ff5d5d;
       --orange: #ff7a1c;
+      --gray: #d9d9d9;
       --shadow: 0 14px 30px rgba(0,0,0,.18);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-right: env(safe-area-inset-right, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-left: env(safe-area-inset-left, 0px);
-      --app-height: 100dvh;
     }
 
     * {
@@ -51,23 +51,26 @@
       overflow: hidden;
     }
 
-    button,
-    input {
+    button, input {
       font: inherit;
     }
 
     .app-shell {
       width: 100vw;
-      min-height: var(--app-height);
+      min-height: 100dvh;
       display: flex;
       align-items: stretch;
       justify-content: center;
-      padding: calc(8px + var(--safe-top)) calc(8px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left));
+      padding:
+        calc(8px + var(--safe-top))
+        calc(8px + var(--safe-right))
+        calc(8px + var(--safe-bottom))
+        calc(8px + var(--safe-left));
     }
 
     .board {
       width: min(100%, 560px);
-      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 16px);
+      min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px);
       background: var(--board);
       border-radius: 26px;
       box-shadow: var(--shadow);
@@ -77,7 +80,7 @@
 
     .board-inner {
       width: 100%;
-      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 36px);
+      min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 36px);
       border: 5px solid var(--line);
       border-radius: 20px;
       position: relative;
@@ -139,7 +142,7 @@
     }
 
     .main-menu {
-      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 56px);
+      min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 56px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -169,6 +172,7 @@
 
     .reveal-btn { background: var(--red); }
     .roll-btn { background: var(--green); }
+
     .panic-btn {
       background: var(--orange);
       width: 102px;
@@ -193,8 +197,20 @@
       text-align: center;
     }
 
+    .title {
+      font-size: clamp(28px, 9vw, 60px);
+      text-align: center;
+      font-weight: 900;
+      margin: 38px 0 18px;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(to bottom, var(--board) 70%, rgba(236,236,236,0));
+      padding-top: 6px;
+      z-index: 2;
+    }
+
     .dice-screen-wrap {
-      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 56px);
+      min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 56px);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -258,13 +274,11 @@
     }
 
     .pos-tl { top: 16%; left: 16%; }
-    .pos-tc { top: 16%; left: 41%; }
     .pos-tr { top: 16%; right: 16%; }
     .pos-ml { top: 41%; left: 16%; }
     .pos-c  { top: 41%; left: 41%; }
     .pos-mr { top: 41%; right: 16%; }
     .pos-bl { bottom: 16%; left: 16%; }
-    .pos-bc { bottom: 16%; left: 41%; }
     .pos-br { bottom: 16%; right: 16%; }
 
     .floating-check {
@@ -295,18 +309,6 @@
       border-bottom: 14px solid #5eb93c;
       transform: rotate(-45deg) translateY(-8%);
       border-radius: 3px;
-    }
-
-    .title {
-      font-size: clamp(28px, 9vw, 60px);
-      text-align: center;
-      font-weight: 900;
-      margin: 38px 0 18px;
-      position: sticky;
-      top: 0;
-      background: linear-gradient(to bottom, var(--board) 70%, rgba(236,236,236,0));
-      padding-top: 6px;
-      z-index: 2;
     }
 
     .score-list {
@@ -345,11 +347,11 @@
     .player-name {
       border: 0;
       background: transparent;
-      font: inherit;
       width: 100%;
       min-width: 0;
       padding: 8px 4px;
       border-radius: 10px;
+      font-size: inherit;
     }
 
     .player-name:focus {
@@ -424,65 +426,6 @@
     }
 
     @media (max-width: 420px) {
-      .app-shell {
-        padding: calc(6px + var(--safe-top)) calc(6px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(6px + var(--safe-left));
-      }
-
-      .board {
-        min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 12px);
-        border-radius: 22px;
-        padding: 8px;
-      }
-
-      .board-inner {
-        min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 28px);
-        border-radius: 18px;
-      }
-
-      .screen {
-        padding: 12px 12px 106px;
-      }
-
-      .top-actions {
-        gap: 6px;
-      }
-
-      .mini-btn {
-        min-width: 0;
-        padding: 9px 12px;
-        font-size: 12px;
-      }
-
-      .main-menu {
-        gap: 14px;
-        padding-top: 40px;
-      }
-
-      .menu-button {
-        width: 100%;
-        max-width: 100%;
-        min-height: 78px;
-        font-size: clamp(28px, 10vw, 44px);
-      }
-
-      .panic-btn {
-        width: 94px;
-        min-width: 94px;
-        min-height: 94px;
-      }
-
-      .dice-view {
-        gap: 10px;
-      }
-
-      .die {
-        width: min(43vw, 165px);
-        height: min(43vw, 165px);
-        min-width: 118px;
-        min-height: 118px;
-        border-radius: 20px;
-      }
-
       .player-row {
         grid-template-columns: 48px minmax(0, 1fr) 48px;
         grid-template-areas:
@@ -491,49 +434,28 @@
         row-gap: 8px;
       }
 
-      .name-wrap {
-        grid-area: name;
-      }
-
-      .player-row .score-btn:first-of-type {
-        grid-area: minus;
-      }
-
-      .player-row .score {
-        grid-area: score;
-      }
-
-      .player-row .score-btn:last-of-type {
-        grid-area: plus;
-      }
-
-      .score {
-        justify-self: center;
-      }
+      .name-wrap { grid-area: name; }
+      .player-row .minus-btn { grid-area: minus; }
+      .player-row .score { grid-area: score; justify-self: center; }
+      .player-row .plus-btn { grid-area: plus; }
     }
 
     @media (min-width: 700px) {
-      .app-shell {
-        padding: 20px;
-      }
+      .app-shell { padding: 20px; }
 
       .board {
-        min-height: min(900px, calc(100vh - 40px));
         min-height: min(900px, calc(100dvh - 40px));
         border-radius: 36px;
         padding: 18px;
       }
 
       .board-inner {
-        min-height: min(864px, calc(100vh - 76px));
         min-height: min(864px, calc(100dvh - 76px));
         border-width: 7px;
         border-radius: 30px;
       }
 
-      .screen {
-        padding: 28px 28px 110px;
-      }
+      .screen { padding: 28px 28px 110px; }
 
       .top-actions {
         top: 16px;
@@ -542,14 +464,7 @@
         justify-content: flex-end;
       }
 
-      .main-menu,
-      .dice-screen-wrap {
-        min-height: 100%;
-      }
-
-      .dice-view {
-        gap: 32px;
-      }
+      .dice-view { gap: 32px; }
 
       .die {
         width: 220px;
@@ -569,28 +484,6 @@
         border-left-width: 18px;
         border-bottom-width: 18px;
       }
-
-      .score-list {
-        width: min(760px, 100%);
-        margin: 0 auto;
-      }
-
-      .player-row {
-        grid-template-columns: minmax(0, 1fr) 58px minmax(50px, auto) 58px;
-        gap: 18px;
-        padding: 14px 16px;
-        font-size: clamp(24px, 4vw, 54px);
-      }
-
-      .remove-btn {
-        width: 40px;
-        height: 40px;
-      }
-
-      .score-btn {
-        min-width: 58px;
-        min-height: 58px;
-      }
     }
   </style>
 </head>
@@ -600,7 +493,7 @@
       <div class="board-inner">
         <div class="top-actions">
           <button class="mini-btn" id="resetScoresBtn" title="Scores zurücksetzen">Scores reset</button>
-          <button class="mini-btn" id="newRoundBtn" title="Neu würfeln">Neu</button>
+          <button class="mini-btn" id="newGameBtn" title="Neuer Wurf">Neu</button>
         </div>
 
         <section class="screen active" id="menuScreen">
@@ -609,17 +502,49 @@
             <button class="menu-button roll-btn" id="rollBtn">Würfeln</button>
             <button class="menu-button panic-btn" id="panicBtn">!</button>
           </div>
-          <div class="hint">Aufdecken zeigt den letzten Wurf. Würfeln erzeugt zwei neue Würfel. ! öffnet direkt die Zwischenbilanz.</div>
+          <div class="hint">
+            Aufdecken zeigt den aktuell verdeckten Wurf. Würfeln startet einen sichtbaren Wurf. ! öffnet direkt die Zwischenbilanz.
+          </div>
         </section>
 
         <section class="screen" id="diceScreen">
           <div class="dice-screen-wrap">
+            <div class="title">Gewürfelt:</div>
             <div class="dice-view">
               <div class="die" id="dieLeft"></div>
               <div class="die" id="dieRight"></div>
             </div>
           </div>
           <button class="floating-check" id="diceConfirmBtn" aria-label="Wurf bestätigen">
+            <span class="check-mark"></span>
+          </button>
+        </section>
+
+        <section class="screen" id="decisionScreen">
+          <div class="main-menu" style="padding-top:52px; gap:18px;">
+            <div class="title" style="margin:0 0 8px; position:static; background:none; padding-top:0;">Nächster Schritt</div>
+            <button class="menu-button roll-btn" id="passRollBtn" style="font-size:clamp(24px,8vw,42px);">Weitergeben</button>
+            <button class="menu-button" id="decisionBlindRollBtn" style="background:var(--gray); font-size:clamp(22px,7vw,42px);">Blind würfeln</button>
+          </div>
+          <div class="hint">
+            Weitergeben behält den gerade sichtbaren Wurf. Blind würfeln ersetzt ihn durch einen verdeckten neuen Wurf.
+          </div>
+        </section>
+
+        <section class="screen" id="revealScreen">
+          <div class="dice-screen-wrap">
+            <div class="title">Aufgedeckt:</div>
+            <div class="dice-view">
+              <div class="die" id="revealDieLeft"></div>
+              <div class="die" id="revealDieRight"></div>
+            </div>
+            <div style="display:flex; justify-content:center; padding:8px 8px 0;">
+              <button class="menu-button reveal-btn" id="toScoreFromRevealBtn" style="max-width:320px; min-height:74px; font-size:clamp(24px,8vw,42px);">
+                Zur Zwischenbilanz
+              </button>
+            </div>
+          </div>
+          <button class="floating-check" id="revealConfirmBtn" aria-label="Zurück zum Menü">
             <span class="check-mark"></span>
           </button>
         </section>
@@ -641,64 +566,76 @@
   <script>
     const state = {
       players: [
-        { name: 'Spieler 1', score: 2 },
-        { name: 'Spieler 2', score: 1 },
-        { name: 'Spieler 3', score: 0 },
+        { name: "Spieler 1", score: 2 },
+        { name: "Spieler 2", score: 1 },
+        { name: "Spieler 3", score: 0 }
       ],
       lastRoll: [3, 1],
-      currentScreen: 'menu',
+      currentScreen: "menu",
+      hasHiddenRoll: true,
+      pendingRoll: null
     };
 
     const pipMap = {
-      1: ['pos-c'],
-      2: ['pos-tl', 'pos-br'],
-      3: ['pos-tl', 'pos-c', 'pos-br'],
-      4: ['pos-tl', 'pos-tr', 'pos-bl', 'pos-br'],
-      5: ['pos-tl', 'pos-tr', 'pos-c', 'pos-bl', 'pos-br'],
-      6: ['pos-tl', 'pos-tr', 'pos-ml', 'pos-mr', 'pos-bl', 'pos-br'],
+      1: ["pos-c"],
+      2: ["pos-tl", "pos-br"],
+      3: ["pos-tl", "pos-c", "pos-br"],
+      4: ["pos-tl", "pos-tr", "pos-bl", "pos-br"],
+      5: ["pos-tl", "pos-tr", "pos-c", "pos-bl", "pos-br"],
+      6: ["pos-tl", "pos-tr", "pos-ml", "pos-mr", "pos-bl", "pos-br"]
     };
 
-    const menuScreen = document.getElementById('menuScreen');
-    const diceScreen = document.getElementById('diceScreen');
-    const scoreScreen = document.getElementById('scoreScreen');
-    const dieLeft = document.getElementById('dieLeft');
-    const dieRight = document.getElementById('dieRight');
-    const scoreList = document.getElementById('scoreList');
+    const menuScreen = document.getElementById("menuScreen");
+    const diceScreen = document.getElementById("diceScreen");
+    const decisionScreen = document.getElementById("decisionScreen");
+    const revealScreen = document.getElementById("revealScreen");
+    const scoreScreen = document.getElementById("scoreScreen");
+
+    const dieLeft = document.getElementById("dieLeft");
+    const dieRight = document.getElementById("dieRight");
+    const revealDieLeft = document.getElementById("revealDieLeft");
+    const revealDieRight = document.getElementById("revealDieRight");
+    const scoreList = document.getElementById("scoreList");
 
     function save() {
-      localStorage.setItem('maexchenState', JSON.stringify(state));
+      localStorage.setItem("maexchenState", JSON.stringify(state));
     }
 
     function load() {
       try {
-        const raw = localStorage.getItem('maexchenState');
+        const raw = localStorage.getItem("maexchenState");
         if (!raw) return;
         const parsed = JSON.parse(raw);
+
         if (parsed.players && parsed.lastRoll) {
           state.players = parsed.players;
           state.lastRoll = parsed.lastRoll;
+          state.hasHiddenRoll = parsed.hasHiddenRoll ?? true;
+          state.pendingRoll = parsed.pendingRoll ?? null;
         }
       } catch (e) {
-        console.warn('Speicherstand konnte nicht geladen werden.', e);
+        console.warn("Speicherstand konnte nicht geladen werden.", e);
       }
     }
 
     function switchScreen(name) {
       state.currentScreen = name;
-      menuScreen.classList.toggle('active', name === 'menu');
-      diceScreen.classList.toggle('active', name === 'dice');
-      scoreScreen.classList.toggle('active', name === 'score');
+      menuScreen.classList.toggle("active", name === "menu");
+      diceScreen.classList.toggle("active", name === "dice");
+      decisionScreen.classList.toggle("active", name === "decision");
+      revealScreen.classList.toggle("active", name === "reveal");
+      scoreScreen.classList.toggle("active", name === "score");
     }
 
     function createPip(position, index) {
-      const pip = document.createElement('span');
+      const pip = document.createElement("span");
       pip.className = `pip ${position}`;
       pip.style.animationDelay = `${index * 35}ms`;
       return pip;
     }
 
     function renderDie(el, value) {
-      el.innerHTML = '';
+      el.innerHTML = "";
       pipMap[value].forEach((pos, index) => {
         el.appendChild(createPip(pos, index));
       });
@@ -708,65 +645,64 @@
       const [left, right] = state.lastRoll;
       renderDie(dieLeft, left);
       renderDie(dieRight, right);
+      renderDie(revealDieLeft, left);
+      renderDie(revealDieRight, right);
     }
 
     function renderScores() {
-      scoreList.innerHTML = '';
+      scoreList.innerHTML = "";
 
       state.players.forEach((player, index) => {
-        const row = document.createElement('div');
-        row.className = 'player-row';
+        const row = document.createElement("div");
+        row.className = "player-row";
 
-        const nameWrap = document.createElement('div');
-        nameWrap.className = 'name-wrap';
+        const nameWrap = document.createElement("div");
+        nameWrap.className = "name-wrap";
 
-        const rank = document.createElement('span');
-        rank.className = 'rank';
+        const rank = document.createElement("span");
+        rank.className = "rank";
         rank.textContent = `${index + 1}.`;
 
-        const input = document.createElement('input');
-        input.className = 'player-name';
+        const input = document.createElement("input");
+        input.className = "player-name";
         input.value = player.name;
-        input.setAttribute('aria-label', `Name von Spieler ${index + 1}`);
-        input.addEventListener('input', (e) => {
+        input.setAttribute("aria-label", `Name von Spieler ${index + 1}`);
+        input.addEventListener("input", (e) => {
           state.players[index].name = e.target.value || `Spieler ${index + 1}`;
           save();
         });
 
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-btn";
+        removeBtn.textContent = "×";
+        removeBtn.title = "Spieler entfernen";
+        removeBtn.addEventListener("click", () => {
+          if (state.players.length <= 1) return;
+          state.players.splice(index, 1);
+          renderScores();
+          save();
+        });
+
         nameWrap.append(rank, input);
+        if (state.players.length > 1) nameWrap.appendChild(removeBtn);
 
-        if (state.players.length > 1) {
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'remove-btn';
-          removeBtn.textContent = '×';
-          removeBtn.title = 'Spieler entfernen';
-          removeBtn.addEventListener('click', () => {
-            state.players.splice(index, 1);
-            renderScores();
-            save();
-          });
-          nameWrap.appendChild(removeBtn);
-        }
-
-        const minusBtn = document.createElement('button');
-        minusBtn.className = 'score-btn';
-        minusBtn.textContent = '−';
-        minusBtn.setAttribute('aria-label', `${player.name} Score verringern`);
-        minusBtn.addEventListener('click', () => {
+        const minusBtn = document.createElement("button");
+        minusBtn.className = "score-btn minus-btn";
+        minusBtn.textContent = "−";
+        minusBtn.addEventListener("click", () => {
           state.players[index].score -= 1;
           renderScores();
           save();
         });
 
-        const score = document.createElement('div');
-        score.className = 'score';
+        const score = document.createElement("div");
+        score.className = "score";
         score.textContent = player.score;
 
-        const plusBtn = document.createElement('button');
-        plusBtn.className = 'score-btn';
-        plusBtn.textContent = '+';
-        plusBtn.setAttribute('aria-label', `${player.name} Score erhöhen`);
-        plusBtn.addEventListener('click', () => {
+        const plusBtn = document.createElement("button");
+        plusBtn.className = "score-btn plus-btn";
+        plusBtn.textContent = "+";
+        plusBtn.addEventListener("click", () => {
           state.players[index].score += 1;
           renderScores();
           save();
@@ -776,6 +712,7 @@
         row.appendChild(minusBtn);
         row.appendChild(score);
         row.appendChild(plusBtn);
+
         scoreList.appendChild(row);
       });
     }
@@ -789,9 +726,9 @@
     }
 
     async function rollDiceAnimated() {
-      switchScreen('dice');
-      dieLeft.classList.add('rolling');
-      dieRight.classList.add('rolling');
+      switchScreen("dice");
+      dieLeft.classList.add("rolling");
+      dieRight.classList.add("rolling");
 
       let ticks = 10;
       const interval = setInterval(() => {
@@ -808,56 +745,106 @@
 
       const finalA = randomDie();
       const finalB = randomDie();
-      state.lastRoll = sortDice(finalA, finalB);
-      renderDice();
-      dieLeft.classList.remove('rolling');
-      dieRight.classList.remove('rolling');
+      state.pendingRoll = sortDice(finalA, finalB);
+
+      renderDie(dieLeft, state.pendingRoll[0]);
+      renderDie(dieRight, state.pendingRoll[1]);
+
+      dieLeft.classList.remove("rolling");
+      dieRight.classList.remove("rolling");
       save();
     }
 
-    document.getElementById('rollBtn').addEventListener('click', async () => {
+    function commitPendingAsVisible() {
+      if (!state.pendingRoll) return;
+      state.lastRoll = [...state.pendingRoll];
+      state.hasHiddenRoll = false;
+      state.pendingRoll = null;
+      renderDice();
+      save();
+    }
+
+    function blindRollFromPending() {
+      const finalA = randomDie();
+      const finalB = randomDie();
+      state.lastRoll = sortDice(finalA, finalB);
+      state.hasHiddenRoll = true;
+      state.pendingRoll = null;
+      renderDice();
+      save();
+    }
+
+    document.getElementById("rollBtn").addEventListener("click", async () => {
       await rollDiceAnimated();
     });
 
-    document.getElementById('revealBtn').addEventListener('click', () => {
+    document.getElementById("diceConfirmBtn").addEventListener("click", () => {
+      if (!state.pendingRoll) return;
+      switchScreen("decision");
+    });
+
+    document.getElementById("passRollBtn").addEventListener("click", () => {
+      commitPendingAsVisible();
+      switchScreen("menu");
+    });
+
+    document.getElementById("decisionBlindRollBtn").addEventListener("click", () => {
+      blindRollFromPending();
+      switchScreen("menu");
+    });
+
+    document.getElementById("revealBtn").addEventListener("click", () => {
+      renderDice();
+      switchScreen("reveal");
+    });
+
+    document.getElementById("revealConfirmBtn").addEventListener("click", () => {
+      switchScreen("menu");
+    });
+
+    document.getElementById("toScoreFromRevealBtn").addEventListener("click", () => {
       renderScores();
-      switchScreen('score');
+      switchScreen("score");
     });
 
-    document.getElementById('panicBtn').addEventListener('click', () => {
+    document.getElementById("panicBtn").addEventListener("click", () => {
       renderScores();
-      switchScreen('score');
+      switchScreen("score");
     });
 
-    document.getElementById('diceConfirmBtn').addEventListener('click', () => {
-      switchScreen('menu');
-    });
-
-    document.getElementById('scoreConfirmBtn').addEventListener('click', () => {
+    document.getElementById("scoreConfirmBtn").addEventListener("click", () => {
       save();
-      switchScreen('menu');
+      switchScreen("menu");
     });
 
-    document.getElementById('addPlayerBtn').addEventListener('click', () => {
-      state.players.push({ name: `Spieler ${state.players.length + 1}`, score: 0 });
+    document.getElementById("addPlayerBtn").addEventListener("click", () => {
+      state.players.push({
+        name: `Spieler ${state.players.length + 1}`,
+        score: 0
+      });
       renderScores();
       save();
     });
 
-    document.getElementById('resetScoresBtn').addEventListener('click', () => {
+    document.getElementById("resetScoresBtn").addEventListener("click", () => {
       state.players.forEach(player => player.score = 0);
       renderScores();
       save();
     });
 
-    document.getElementById('newRoundBtn').addEventListener('click', async () => {
-      await rollDiceAnimated();
+    document.getElementById("newGameBtn").addEventListener("click", () => {
+      state.pendingRoll = null;
+      state.lastRoll = sortDice(randomDie(), randomDie());
+      state.hasHiddenRoll = true;
+      renderDice();
+      save();
+      switchScreen("menu");
     });
 
     load();
     renderDice();
     renderScores();
-    switchScreen('menu');
+    switchScreen("menu");
   </script>
 </body>
 </html>
