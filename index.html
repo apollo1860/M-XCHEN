@@ -863,12 +863,13 @@
       const finalA = randomDie();
       const finalB = randomDie();
       state.pendingRoll = sortDice(finalA, finalB);
+
       renderDie(dieLeft, state.pendingRoll[0]);
       renderDie(dieRight, state.pendingRoll[1]);
+
       dieLeft.classList.remove('rolling');
       dieRight.classList.remove('rolling');
       save();
-      switchScreen('decision');
     }
 
     function commitPendingAsVisible() {
@@ -924,6 +925,7 @@
     });
 
     document.getElementById('diceConfirmBtn').addEventListener('click', () => {
+      if (!state.pendingRoll) return;
       switchScreen('decision');
     });
 
