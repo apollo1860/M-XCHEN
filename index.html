@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mäxchen</title>
+  <style>
+    :root {
+      --wood-1: #b67540;
+      --wood-2: #8c5327;
+      --board: #e9e9e9;
+      --line: #111;
+      --green: #6cbc49;
+      --red: #ff5e5e;
+      --orange: #ff7a1c;
+      --shadow: 0 14px 30px rgba(0,0,0,.18);
+      --radius-xl: 34px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.12), transparent 25%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255,255,255,.08) 0px,
+          rgba(255,255,255,.08) 2px,
+          rgba(0,0,0,.03) 2px,
+          rgba(0,0,0,.03) 7px
+        ),
+        linear-gradient(90deg, var(--wood-1), #c9874f 20%, #a86435 42%, #cf8c56 65%, var(--wood-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #000;
+    }
+
+    .app-shell {
+      width: min(920px, 100%);
+      aspect-ratio: 1 / 1;
+      position: relative;
+    }
+
+    .board {
+      position: absolute;
+      inset: 0;
+      background: var(--board);
+      border-radius: 44px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .board-inner {
+      width: 100%;
+      height: 100%;
+      border: 8px solid var(--line);
+      border-radius: 34px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,.06);
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 40px;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(.985);
+      transition: opacity .25s ease, transform .25s ease;
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .main-menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 34px;
+    }
+
+    .menu-button {
+      border: 0;
+      color: #000;
+      font-weight: 900;
+      font-size: clamp(32px, 6.8vw, 96px);
+      line-height: 1;
+      padding: 18px 32px;
+      min-width: min(600px, 84%);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+      box-shadow: 0 10px 20px rgba(0,0,0,.12);
+    }
+
+    .menu-button:hover { transform: translateY(-2px) scale(1.01); }
+    .menu-button:active { transform: translateY(1px) scale(.99); }
+
+    .reveal-btn { background: var(--red); }
+    .roll-btn { background: var(--green); }
+    .panic-btn {
+      background: var(--orange);
+      min-width: 0;
+      width: clamp(88px, 14vw, 160px);
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      font-size: clamp(54px, 8vw, 100px);
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .dice-view {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(24px, 5vw, 64px);
+      height: 100%;
+      padding-bottom: 90px;
+    }
+
+    .die {
+      width: min(34vw, 270px);
+      height: min(34vw, 270px);
+      max-width: 270px;
+      max-height: 270px;
+      min-width: 150px;
+      min-height: 150px;
+      background: #fff;
+      border: 8px solid #000;
+      border-radius: 28px;
+      position: relative;
+      box-shadow: 0 12px 24px rgba(0,0,0,.12);
+      transition: transform .35s ease;
+    }
+
+    .die.rolling {
+      animation: shake .7s cubic-bezier(.25,.46,.45,.94) both;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0,0) rotate(0deg) scale(1); }
+      10% { transform: translate(-6px, 4px) rotate(-5deg) scale(1.03); }
+      20% { transform: translate(8px, -6px) rotate(6deg) scale(.98); }
+      30% { transform: translate(-10px, 2px) rotate(-7deg) scale(1.04); }
+      40% { transform: translate(9px, 8px) rotate(8deg) scale(.97); }
+      50% { transform: translate(-7px, -8px) rotate(-8deg) scale(1.05); }
+      60% { transform: translate(8px, 4px) rotate(5deg) scale(.98); }
+      70% { transform: translate(-6px, -6px) rotate(-4deg) scale(1.03); }
+      80% { transform: translate(5px, 4px) rotate(3deg) scale(.99); }
+      100% { transform: translate(0,0) rotate(0deg) scale(1); }
+    }
+
+    .pip {
+      width: 18%;
+      aspect-ratio: 1 / 1;
+      background: #000;
+      border-radius: 50%;
+      position: absolute;
+      transform: scale(0);
+      animation: pipIn .2s ease forwards;
+    }
+
+    @keyframes pipIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .pos-tl { top: 16%; left: 16%; }
+    .pos-tc { top: 16%; left: 41%; }
+    .pos-tr { top: 16%; right: 16%; }
+    .pos-ml { top: 41%; left: 16%; }
+    .pos-c  { top: 41%; left: 41%; }
+    .pos-mr { top: 41%; right: 16%; }
+    .pos-bl { bottom: 16%; left: 16%; }
+    .pos-bc { bottom: 16%; left: 41%; }
+    .pos-br { bottom: 16%; right: 16%; }
+
+    .floating-check {
+      position: absolute;
+      right: -10px;
+      bottom: -10px;
+      width: clamp(88px, 12vw, 128px);
+      height: clamp(88px, 12vw, 128px);
+      border-radius: 50%;
+      border: 6px solid #000;
+      background: #efefef;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 24px rgba(0,0,0,.18);
+      cursor: pointer;
+      transition: transform .16s ease;
+      z-index: 5;
+    }
+
+    .floating-check:hover { transform: scale(1.05); }
+    .floating-check:active { transform: scale(.97); }
+
+    .check-mark {
+      width: 40%;
+      height: 22%;
+      border-left: 20px solid #5eb93c;
+      border-bottom: 20px solid #5eb93c;
+      transform: rotate(-45deg) translateY(-6%);
+      border-radius: 4px;
+    }
+
+    .title {
+      font-size: clamp(34px, 6vw, 72px);
+      text-align: center;
+      font-weight: 900;
+      margin: 8px 0 28px;
+    }
+
+    .score-list {
+      width: min(720px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .player-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: center;
+      gap: 18px;
+      font-size: clamp(24px, 4vw, 60px);
+    }
+
+    .name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .rank {
+      width: 1.6em;
+      text-align: right;
+      flex: 0 0 auto;
+    }
+
+    .player-name {
+      border: 0;
+      background: transparent;
+      font: inherit;
+      width: 100%;
+      min-width: 0;
+      padding: 6px 8px;
+      border-radius: 10px;
+    }
+
+    .player-name:focus {
+      outline: 4px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.4);
+    }
+
+    .score-btn,
+    .remove-btn,
+    .add-player-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 900;
+      color: #000;
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    .score-btn:hover,
+    .remove-btn:hover,
+    .add-player-btn:hover { transform: scale(1.06); }
+
+    .score-btn {
+      background: transparent;
+      font-size: clamp(34px, 5vw, 68px);
+      padding: 0 6px;
+      line-height: 1;
+      min-width: .8em;
+    }
+
+    .score {
+      font-weight: 900;
+      font-size: clamp(34px, 5vw, 72px);
+      min-width: 1.1em;
+      text-align: center;
+    }
+
+    .remove-btn {
+      background: #ffd4d4;
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      font-size: 24px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .add-player {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .add-player-btn {
+      background: transparent;
+      font-size: clamp(36px, 6vw, 76px);
+      width: 1.2em;
+      height: 1.2em;
+      border-radius: 50%;
+      border: 5px dashed rgba(0,0,0,.35);
+    }
+
+    .top-actions {
+      position: absolute;
+      top: 20px;
+      right: 22px;
+      display: flex;
+      gap: 12px;
+      z-index: 3;
+    }
+
+    .mini-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 16px;
+      font-weight: 700;
+      background: rgba(0,0,0,.08);
+      cursor: pointer;
+    }
+
+    .hint {
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      font-size: clamp(14px, 2vw, 20px);
+      opacity: .7;
+      text-align: center;
+      width: calc(100% - 40px);
+    }
+
+    @media (max-width: 760px) {
+      .board { padding: 18px; }
+      .screen { padding: 24px; }
+      .main-menu { gap: 24px; }
+      .player-row {
+        grid-template-columns: 1fr auto auto;
+      }
+      .remove-btn {
+        grid-column: 1 / -1;
+        justify-self: end;
+        width: 36px;
+        height: 36px;
+      }
+      .dice-view {
+        flex-direction: column;
+        padding-bottom: 110px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="board">
+      <div class="board-inner">
+        <div class="top-actions">
+          <button class="mini-btn" id="resetScoresBtn" title="Scores zurücksetzen">Scores reset</button>
+          <button class="mini-btn" id="newRoundBtn" title="Neu würfeln">Neu</button>
+        </div>
+
+        <section class="screen active" id="menuScreen">
+          <div class="main-menu">
+            <button class="menu-button reveal-btn" id="revealBtn">Aufdecken</button>
+            <button class="menu-button roll-btn" id="rollBtn">Würfeln</button>
+            <button class="menu-button panic-btn" id="panicBtn">!</button>
+          </div>
+          <div class="hint">Aufdecken zeigt den letzten Wurf. Würfeln erzeugt zwei neue Würfel. ! öffnet direkt die Zwischenbilanz.</div>
+        </section>
+
+        <section class="screen" id="diceScreen">
+          <div class="dice-view">
+            <div class="die" id="dieLeft"></div>
+            <div class="die" id="dieRight"></div>
+          </div>
+          <button class="floating-check" id="diceConfirmBtn" aria-label="Wurf bestätigen">
+            <span class="check-mark"></span>
+          </button>
+        </section>
+
+        <section class="screen" id="scoreScreen">
+          <div class="title">Zwischenbilanz:</div>
+          <div class="score-list" id="scoreList"></div>
+          <div class="add-player">
+            <button class="add-player-btn" id="addPlayerBtn" aria-label="Spieler hinzufügen">+</button>
+          </div>
+          <button class="floating-check" id="scoreConfirmBtn" aria-label="Zwischenbilanz bestätigen">
+            <span class="check-mark"></span>
+          </button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      players: [
+        { name: 'Spieler 1', score: 0 },
+        { name: 'Spieler 2', score: 0 },
+        { name: 'Spieler 3', score: 0 },
+      ],
+      lastRoll: [3, 1],
+      currentScreen: 'menu',
+    };
+
+    const pipMap = {
+      1: ['pos-c'],
+      2: ['pos-tl', 'pos-br'],
+      3: ['pos-tl', 'pos-c', 'pos-br'],
+      4: ['pos-tl', 'pos-tr', 'pos-bl', 'pos-br'],
+      5: ['pos-tl', 'pos-tr', 'pos-c', 'pos-bl', 'pos-br'],
+      6: ['pos-tl', 'pos-tr', 'pos-ml', 'pos-mr', 'pos-bl', 'pos-br'],
+    };
+
+    const menuScreen = document.getElementById('menuScreen');
+    const diceScreen = document.getElementById('diceScreen');
+    const scoreScreen = document.getElementById('scoreScreen');
+    const dieLeft = document.getElementById('dieLeft');
+    const dieRight = document.getElementById('dieRight');
+    const scoreList = document.getElementById('scoreList');
+
+    function save() {
+      localStorage.setItem('maexchenState', JSON.stringify(state));
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem('maexchenState');
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed.players && parsed.lastRoll) {
+          state.players = parsed.players;
+          state.lastRoll = parsed.lastRoll;
+        }
+      } catch (e) {
+        console.warn('Speicherstand konnte nicht geladen werden.', e);
+      }
+    }
+
+    function switchScreen(name) {
+      state.currentScreen = name;
+      menuScreen.classList.toggle('active', name === 'menu');
+      diceScreen.classList.toggle('active', name === 'dice');
+      scoreScreen.classList.toggle('active', name === 'score');
+    }
+
+    function createPip(position, index) {
+      const pip = document.createElement('span');
+      pip.className = `pip ${position}`;
+      pip.style.animationDelay = `${index * 35}ms`;
+      return pip;
+    }
+
+    function renderDie(el, value) {
+      el.innerHTML = '';
+      pipMap[value].forEach((pos, index) => {
+        el.appendChild(createPip(pos, index));
+      });
+    }
+
+    function renderDice() {
+      const [left, right] = state.lastRoll;
+      renderDie(dieLeft, left);
+      renderDie(dieRight, right);
+    }
+
+    function renderScores() {
+      scoreList.innerHTML = '';
+
+      state.players.forEach((player, index) => {
+        const row = document.createElement('div');
+        row.className = 'player-row';
+
+        const nameWrap = document.createElement('div');
+        nameWrap.className = 'name-wrap';
+
+        const rank = document.createElement('span');
+        rank.className = 'rank';
+        rank.textContent = `${index + 1}.`;
+
+        const input = document.createElement('input');
+        input.className = 'player-name';
+        input.value = player.name;
+        input.setAttribute('aria-label', `Name von Spieler ${index + 1}`);
+        input.addEventListener('input', (e) => {
+          state.players[index].name = e.target.value || `Spieler ${index + 1}`;
+          save();
+        });
+
+        nameWrap.append(rank, input);
+
+        const minusBtn = document.createElement('button');
+        minusBtn.className = 'score-btn';
+        minusBtn.textContent = '−';
+        minusBtn.setAttribute('aria-label', `${player.name} Score verringern`);
+        minusBtn.addEventListener('click', () => {
+          state.players[index].score -= 1;
+          renderScores();
+          save();
+        });
+
+        const score = document.createElement('div');
+        score.className = 'score';
+        score.textContent = player.score;
+
+        const plusBtn = document.createElement('button');
+        plusBtn.className = 'score-btn';
+        plusBtn.textContent = '+';
+        plusBtn.setAttribute('aria-label', `${player.name} Score erhöhen`);
+        plusBtn.addEventListener('click', () => {
+          state.players[index].score += 1;
+          renderScores();
+          save();
+        });
+
+        row.appendChild(nameWrap);
+        row.appendChild(minusBtn);
+        row.appendChild(score);
+        row.appendChild(plusBtn);
+
+        if (state.players.length > 1) {
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-btn';
+          removeBtn.textContent = '×';
+          removeBtn.title = 'Spieler entfernen';
+          removeBtn.addEventListener('click', () => {
+            state.players.splice(index, 1);
+            renderScores();
+            save();
+          });
+          nameWrap.appendChild(removeBtn);
+        }
+
+        scoreList.appendChild(row);
+      });
+    }
+
+    function randomDie() {
+      return Math.floor(Math.random() * 6) + 1;
+    }
+
+    function sortDice(a, b) {
+      return a >= b ? [a, b] : [b, a];
+    }
+
+    async function rollDiceAnimated() {
+      switchScreen('dice');
+      dieLeft.classList.add('rolling');
+      dieRight.classList.add('rolling');
+
+      let ticks = 10;
+      const interval = setInterval(() => {
+        const a = randomDie();
+        const b = randomDie();
+        const [left, right] = sortDice(a, b);
+        renderDie(dieLeft, left);
+        renderDie(dieRight, right);
+        ticks -= 1;
+        if (ticks <= 0) clearInterval(interval);
+      }, 70);
+
+      await new Promise(resolve => setTimeout(resolve, 760));
+
+      const finalA = randomDie();
+      const finalB = randomDie();
+      state.lastRoll = sortDice(finalA, finalB);
+      renderDice();
+      dieLeft.classList.remove('rolling');
+      dieRight.classList.remove('rolling');
+      save();
+    }
+
+    document.getElementById('rollBtn').addEventListener('click', async () => {
+      await rollDiceAnimated();
+    });
+
+    document.getElementById('revealBtn').addEventListener('click', () => {
+      renderScores();
+      switchScreen('score');
+    });
+
+    document.getElementById('panicBtn').addEventListener('click', () => {
+      renderScores();
+      switchScreen('score');
+    });
+
+    document.getElementById('diceConfirmBtn').addEventListener('click', () => {
+      switchScreen('menu');
+    });
+
+    document.getElementById('scoreConfirmBtn').addEventListener('click', () => {
+      save();
+      switchScreen('menu');
+    });
+
+    document.getElementById('addPlayerBtn').addEventListener('click', () => {
+      state.players.push({ name: `Spieler ${state.players.length + 1}`, score: 0 });
+      renderScores();
+      save();
+    });
+
+    document.getElementById('resetScoresBtn').addEventListener('click', () => {
+      state.players.forEach(player => player.score = 0);
+      renderScores();
+      save();
+    });
+
+    document.getElementById('newRoundBtn').addEventListener('click', async () => {
+      await rollDiceAnimated();
+    });
+
+    load();
+    renderDice();
+    renderScores();
+    switchScreen('menu');
+  </script>
+</body>
+</html>
