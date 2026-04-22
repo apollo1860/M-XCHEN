@@ -2,29 +2,41 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Mäxchen</title>
   <style>
     :root {
       --wood-1: #b67540;
       --wood-2: #8c5327;
-      --board: #e9e9e9;
-      --line: #111;
+      --board: #ececec;
+      --line: #101010;
       --green: #6cbc49;
-      --red: #ff5e5e;
+      --red: #ff5d5d;
       --orange: #ff7a1c;
       --shadow: 0 14px 30px rgba(0,0,0,.18);
-      --radius-xl: 34px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --app-height: 100dvh;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
 
     body {
-      margin: 0;
       min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100dvh;
       background:
         radial-gradient(circle at 20% 20%, rgba(255,255,255,.12), transparent 25%),
         repeating-linear-gradient(
@@ -35,46 +47,59 @@
           rgba(0,0,0,.03) 7px
         ),
         linear-gradient(90deg, var(--wood-1), #c9874f 20%, #a86435 42%, #cf8c56 65%, var(--wood-2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
       color: #000;
+      overflow: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
     }
 
     .app-shell {
-      width: min(920px, 100%);
-      aspect-ratio: 1 / 1;
-      position: relative;
+      width: 100vw;
+      min-height: var(--app-height);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: calc(8px + var(--safe-top)) calc(8px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left));
     }
 
     .board {
-      position: absolute;
-      inset: 0;
+      width: min(100%, 560px);
+      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 16px);
       background: var(--board);
-      border-radius: 44px;
+      border-radius: 26px;
       box-shadow: var(--shadow);
-      padding: 28px;
+      padding: 10px;
+      position: relative;
     }
 
     .board-inner {
       width: 100%;
-      height: 100%;
-      border: 8px solid var(--line);
-      border-radius: 34px;
+      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 36px);
+      border: 5px solid var(--line);
+      border-radius: 20px;
       position: relative;
       overflow: hidden;
-      background: rgba(255,255,255,.06);
+      background: rgba(255,255,255,.08);
     }
 
     .screen {
       position: absolute;
       inset: 0;
-      padding: 40px;
+      padding: 14px 14px 108px;
       opacity: 0;
       pointer-events: none;
       transform: scale(.985);
-      transition: opacity .25s ease, transform .25s ease;
+      transition: opacity .22s ease, transform .22s ease;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .screen::-webkit-scrollbar {
+      display: none;
     }
 
     .screen.active {
@@ -83,67 +108,121 @@
       transform: scale(1);
     }
 
+    .top-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      left: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .top-actions > * {
+      pointer-events: auto;
+    }
+
+    .mini-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      background: rgba(0,0,0,.08);
+      cursor: pointer;
+      min-height: 44px;
+      min-width: 84px;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0,0,0,.08);
+    }
+
     .main-menu {
+      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 56px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 34px;
+      gap: 16px;
+      padding: 44px 0 28px;
     }
 
     .menu-button {
       border: 0;
       color: #000;
       font-weight: 900;
-      font-size: clamp(32px, 6.8vw, 96px);
+      font-size: clamp(30px, 10vw, 64px);
       line-height: 1;
-      padding: 18px 32px;
-      min-width: min(600px, 84%);
-      border-radius: 8px;
+      padding: 18px 16px;
+      width: min(100%, 330px);
+      min-height: 82px;
+      border-radius: 16px;
       cursor: pointer;
       transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
       box-shadow: 0 10px 20px rgba(0,0,0,.12);
     }
 
-    .menu-button:hover { transform: translateY(-2px) scale(1.01); }
-    .menu-button:active { transform: translateY(1px) scale(.99); }
+    .menu-button:active {
+      transform: scale(.98);
+    }
 
     .reveal-btn { background: var(--red); }
     .roll-btn { background: var(--green); }
     .panic-btn {
       background: var(--orange);
-      min-width: 0;
-      width: clamp(88px, 14vw, 160px);
+      width: 102px;
+      min-width: 102px;
+      min-height: 102px;
       aspect-ratio: 1 / 1;
       display: grid;
       place-items: center;
-      font-size: clamp(54px, 8vw, 100px);
+      font-size: clamp(54px, 14vw, 88px);
       padding: 0;
-      border-radius: 0;
+      border-radius: 18px;
+    }
+
+    .hint {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 16px;
+      font-size: 12px;
+      line-height: 1.35;
+      opacity: .72;
+      text-align: center;
+    }
+
+    .dice-screen-wrap {
+      min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 56px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 32px;
     }
 
     .dice-view {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: clamp(24px, 5vw, 64px);
-      height: 100%;
-      padding-bottom: 90px;
+      gap: 12px;
+      width: 100%;
+      padding: 16px 0 22px;
+      flex-wrap: nowrap;
     }
 
     .die {
-      width: min(34vw, 270px);
-      height: min(34vw, 270px);
-      max-width: 270px;
-      max-height: 270px;
-      min-width: 150px;
-      min-height: 150px;
+      width: min(42vw, 180px);
+      height: min(42vw, 180px);
+      min-width: 128px;
+      min-height: 128px;
       background: #fff;
-      border: 8px solid #000;
-      border-radius: 28px;
+      border: 5px solid #000;
+      border-radius: 24px;
       position: relative;
       box-shadow: 0 12px 24px rgba(0,0,0,.12);
       transition: transform .35s ease;
+      flex: 0 1 auto;
     }
 
     .die.rolling {
@@ -190,67 +269,77 @@
 
     .floating-check {
       position: absolute;
-      right: -10px;
-      bottom: -10px;
-      width: clamp(88px, 12vw, 128px);
-      height: clamp(88px, 12vw, 128px);
+      right: 10px;
+      bottom: 10px;
+      width: 84px;
+      height: 84px;
       border-radius: 50%;
-      border: 6px solid #000;
+      border: 5px solid #000;
       background: #efefef;
       display: grid;
       place-items: center;
       box-shadow: 0 12px 24px rgba(0,0,0,.18);
       cursor: pointer;
       transition: transform .16s ease;
-      z-index: 5;
+      z-index: 6;
     }
 
-    .floating-check:hover { transform: scale(1.05); }
-    .floating-check:active { transform: scale(.97); }
+    .floating-check:active {
+      transform: scale(.96);
+    }
 
     .check-mark {
-      width: 40%;
-      height: 22%;
-      border-left: 20px solid #5eb93c;
-      border-bottom: 20px solid #5eb93c;
-      transform: rotate(-45deg) translateY(-6%);
-      border-radius: 4px;
+      width: 34%;
+      height: 18%;
+      border-left: 14px solid #5eb93c;
+      border-bottom: 14px solid #5eb93c;
+      transform: rotate(-45deg) translateY(-8%);
+      border-radius: 3px;
     }
 
     .title {
-      font-size: clamp(34px, 6vw, 72px);
+      font-size: clamp(28px, 9vw, 60px);
       text-align: center;
       font-weight: 900;
-      margin: 8px 0 28px;
+      margin: 38px 0 18px;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(to bottom, var(--board) 70%, rgba(236,236,236,0));
+      padding-top: 6px;
+      z-index: 2;
     }
 
     .score-list {
-      width: min(720px, 100%);
-      margin: 0 auto;
+      width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
+      padding-bottom: 10px;
     }
 
     .player-row {
       display: grid;
-      grid-template-columns: 1fr auto auto auto;
+      grid-template-columns: minmax(0, 1fr) 54px minmax(40px, auto) 54px;
       align-items: center;
-      gap: 18px;
-      font-size: clamp(24px, 4vw, 60px);
+      gap: 8px;
+      font-size: clamp(18px, 5.3vw, 38px);
+      background: rgba(255,255,255,.3);
+      border-radius: 18px;
+      padding: 10px;
     }
 
     .name-wrap {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 8px;
       min-width: 0;
     }
 
     .rank {
-      width: 1.6em;
+      width: 1.5em;
       text-align: right;
       flex: 0 0 auto;
+      font-weight: 700;
     }
 
     .player-name {
@@ -259,13 +348,13 @@
       font: inherit;
       width: 100%;
       min-width: 0;
-      padding: 6px 8px;
+      padding: 8px 4px;
       border-radius: 10px;
     }
 
     .player-name:focus {
-      outline: 4px solid rgba(0,0,0,.12);
-      background: rgba(255,255,255,.4);
+      outline: 3px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.45);
     }
 
     .score-btn,
@@ -278,98 +367,229 @@
       transition: transform .12s ease, filter .12s ease;
     }
 
-    .score-btn:hover,
-    .remove-btn:hover,
-    .add-player-btn:hover { transform: scale(1.06); }
+    .score-btn:active,
+    .remove-btn:active,
+    .add-player-btn:active {
+      transform: scale(.96);
+    }
 
     .score-btn {
-      background: transparent;
-      font-size: clamp(34px, 5vw, 68px);
-      padding: 0 6px;
+      background: rgba(0,0,0,.06);
+      border-radius: 16px;
+      font-size: clamp(30px, 8vw, 54px);
       line-height: 1;
-      min-width: .8em;
+      min-width: 54px;
+      min-height: 54px;
+      display: grid;
+      place-items: center;
+      padding: 0;
     }
 
     .score {
       font-weight: 900;
-      font-size: clamp(34px, 5vw, 72px);
-      min-width: 1.1em;
+      font-size: clamp(30px, 8vw, 54px);
+      min-width: 1.2em;
       text-align: center;
     }
 
     .remove-btn {
       background: #ffd4d4;
       border-radius: 999px;
-      width: 42px;
-      height: 42px;
-      font-size: 24px;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
       line-height: 1;
       display: grid;
       place-items: center;
       padding: 0;
+      flex: 0 0 auto;
     }
 
     .add-player {
       display: flex;
       justify-content: center;
-      margin-top: 16px;
+      margin: 14px 0 0;
+      padding-bottom: 10px;
     }
 
     .add-player-btn {
       background: transparent;
-      font-size: clamp(36px, 6vw, 76px);
-      width: 1.2em;
-      height: 1.2em;
+      font-size: clamp(28px, 9vw, 56px);
+      width: 62px;
+      height: 62px;
       border-radius: 50%;
-      border: 5px dashed rgba(0,0,0,.35);
+      border: 4px dashed rgba(0,0,0,.35);
+      display: grid;
+      place-items: center;
     }
 
-    .top-actions {
-      position: absolute;
-      top: 20px;
-      right: 22px;
-      display: flex;
-      gap: 12px;
-      z-index: 3;
-    }
-
-    .mini-btn {
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 16px;
-      font-weight: 700;
-      background: rgba(0,0,0,.08);
-      cursor: pointer;
-    }
-
-    .hint {
-      position: absolute;
-      left: 50%;
-      bottom: 20px;
-      transform: translateX(-50%);
-      font-size: clamp(14px, 2vw, 20px);
-      opacity: .7;
-      text-align: center;
-      width: calc(100% - 40px);
-    }
-
-    @media (max-width: 760px) {
-      .board { padding: 18px; }
-      .screen { padding: 24px; }
-      .main-menu { gap: 24px; }
-      .player-row {
-        grid-template-columns: 1fr auto auto;
+    @media (max-width: 420px) {
+      .app-shell {
+        padding: calc(6px + var(--safe-top)) calc(6px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(6px + var(--safe-left));
       }
-      .remove-btn {
-        grid-column: 1 / -1;
-        justify-self: end;
-        width: 36px;
-        height: 36px;
+
+      .board {
+        min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 12px);
+        border-radius: 22px;
+        padding: 8px;
       }
+
+      .board-inner {
+        min-height: calc(var(--app-height) - var(--safe-top) - var(--safe-bottom) - 28px);
+        border-radius: 18px;
+      }
+
+      .screen {
+        padding: 12px 12px 106px;
+      }
+
+      .top-actions {
+        gap: 6px;
+      }
+
+      .mini-btn {
+        min-width: 0;
+        padding: 9px 12px;
+        font-size: 12px;
+      }
+
+      .main-menu {
+        gap: 14px;
+        padding-top: 40px;
+      }
+
+      .menu-button {
+        width: 100%;
+        max-width: 100%;
+        min-height: 78px;
+        font-size: clamp(28px, 10vw, 44px);
+      }
+
+      .panic-btn {
+        width: 94px;
+        min-width: 94px;
+        min-height: 94px;
+      }
+
       .dice-view {
-        flex-direction: column;
-        padding-bottom: 110px;
+        gap: 10px;
+      }
+
+      .die {
+        width: min(43vw, 165px);
+        height: min(43vw, 165px);
+        min-width: 118px;
+        min-height: 118px;
+        border-radius: 20px;
+      }
+
+      .player-row {
+        grid-template-columns: 48px minmax(0, 1fr) 48px;
+        grid-template-areas:
+          "minus name plus"
+          ". score .";
+        row-gap: 8px;
+      }
+
+      .name-wrap {
+        grid-area: name;
+      }
+
+      .player-row .score-btn:first-of-type {
+        grid-area: minus;
+      }
+
+      .player-row .score {
+        grid-area: score;
+      }
+
+      .player-row .score-btn:last-of-type {
+        grid-area: plus;
+      }
+
+      .score {
+        justify-self: center;
+      }
+    }
+
+    @media (min-width: 700px) {
+      .app-shell {
+        padding: 20px;
+      }
+
+      .board {
+        min-height: min(900px, calc(100vh - 40px));
+        min-height: min(900px, calc(100dvh - 40px));
+        border-radius: 36px;
+        padding: 18px;
+      }
+
+      .board-inner {
+        min-height: min(864px, calc(100vh - 76px));
+        min-height: min(864px, calc(100dvh - 76px));
+        border-width: 7px;
+        border-radius: 30px;
+      }
+
+      .screen {
+        padding: 28px 28px 110px;
+      }
+
+      .top-actions {
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        justify-content: flex-end;
+      }
+
+      .main-menu,
+      .dice-screen-wrap {
+        min-height: 100%;
+      }
+
+      .dice-view {
+        gap: 32px;
+      }
+
+      .die {
+        width: 220px;
+        height: 220px;
+        border-width: 7px;
+      }
+
+      .floating-check {
+        width: 108px;
+        height: 108px;
+        right: 14px;
+        bottom: 14px;
+        border-width: 6px;
+      }
+
+      .check-mark {
+        border-left-width: 18px;
+        border-bottom-width: 18px;
+      }
+
+      .score-list {
+        width: min(760px, 100%);
+        margin: 0 auto;
+      }
+
+      .player-row {
+        grid-template-columns: minmax(0, 1fr) 58px minmax(50px, auto) 58px;
+        gap: 18px;
+        padding: 14px 16px;
+        font-size: clamp(24px, 4vw, 54px);
+      }
+
+      .remove-btn {
+        width: 40px;
+        height: 40px;
+      }
+
+      .score-btn {
+        min-width: 58px;
+        min-height: 58px;
       }
     }
   </style>
@@ -393,9 +613,11 @@
         </section>
 
         <section class="screen" id="diceScreen">
-          <div class="dice-view">
-            <div class="die" id="dieLeft"></div>
-            <div class="die" id="dieRight"></div>
+          <div class="dice-screen-wrap">
+            <div class="dice-view">
+              <div class="die" id="dieLeft"></div>
+              <div class="die" id="dieRight"></div>
+            </div>
           </div>
           <button class="floating-check" id="diceConfirmBtn" aria-label="Wurf bestätigen">
             <span class="check-mark"></span>
@@ -419,8 +641,8 @@
   <script>
     const state = {
       players: [
-        { name: 'Spieler 1', score: 0 },
-        { name: 'Spieler 2', score: 0 },
+        { name: 'Spieler 1', score: 2 },
+        { name: 'Spieler 2', score: 1 },
         { name: 'Spieler 3', score: 0 },
       ],
       lastRoll: [3, 1],
@@ -513,6 +735,19 @@
 
         nameWrap.append(rank, input);
 
+        if (state.players.length > 1) {
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-btn';
+          removeBtn.textContent = '×';
+          removeBtn.title = 'Spieler entfernen';
+          removeBtn.addEventListener('click', () => {
+            state.players.splice(index, 1);
+            renderScores();
+            save();
+          });
+          nameWrap.appendChild(removeBtn);
+        }
+
         const minusBtn = document.createElement('button');
         minusBtn.className = 'score-btn';
         minusBtn.textContent = '−';
@@ -541,20 +776,6 @@
         row.appendChild(minusBtn);
         row.appendChild(score);
         row.appendChild(plusBtn);
-
-        if (state.players.length > 1) {
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'remove-btn';
-          removeBtn.textContent = '×';
-          removeBtn.title = 'Spieler entfernen';
-          removeBtn.addEventListener('click', () => {
-            state.players.splice(index, 1);
-            renderScores();
-            save();
-          });
-          nameWrap.appendChild(removeBtn);
-        }
-
         scoreList.appendChild(row);
       });
     }
