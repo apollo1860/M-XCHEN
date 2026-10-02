@@ -734,6 +734,7 @@
     }
 
     function switchScreen(name) {
+      if (state.currentScreen !== name) lastScreenSwitch = Date.now();
       state.currentScreen = name;
       menuScreen.classList.toggle('active', name === 'menu');
       diceScreen.classList.toggle('active', name === 'dice');
@@ -842,33 +843,46 @@
       return a >= b ? [a, b] : [b, a];
     }
 
+    let isRolling = false;
+    let lastScreenSwitch = 0;
+
+    // Verhindert, dass ein "Geister-Klick" (verzögerter Touch-Klick auf manchen
+    // Handys) direkt nach einem Bildschirmwechsel den Button darunter auslöst.
+    function tapLocked() {
+      return Date.now() - lastScreenSwitch < 400;
+    }
+
     async function rollDiceAnimated() {
+      if (isRolling) return;
+      isRolling = true;
+
+      // Endergebnis sofort festlegen – angezeigt wird später genau dieser Wert.
+      state.pendingRoll = sortDice(randomDie(), randomDie());
+
       switchScreen('dice');
       dieLeft.classList.add('rolling');
       dieRight.classList.add('rolling');
 
-      let ticks = 10;
       const interval = setInterval(() => {
-        const a = randomDie();
-        const b = randomDie();
-        const [left, right] = sortDice(a, b);
+        const [left, right] = sortDice(randomDie(), randomDie());
         renderDie(dieLeft, left);
         renderDie(dieRight, right);
-        ticks -= 1;
-        if (ticks <= 0) clearInterval(interval);
       }, 70);
 
       await new Promise(resolve => setTimeout(resolve, 760));
 
-      const finalA = randomDie();
-      const finalB = randomDie();
-      state.pendingRoll = sortDice(finalA, finalB);
+      // Animation explizit stoppen, bevor das Ergebnis gezeichnet wird. Vorher
+      // konnte auf langsamen Handys noch ein später Animations-Tick das
+      // angezeigte Ergebnis überschreiben, sodass Anzeige und gespeicherter
+      // Wurf auseinanderliefen.
+      clearInterval(interval);
 
       renderDie(dieLeft, state.pendingRoll[0]);
       renderDie(dieRight, state.pendingRoll[1]);
 
       dieLeft.classList.remove('rolling');
       dieRight.classList.remove('rolling');
+      isRolling = false;
       save();
     }
 
@@ -892,10 +906,12 @@
     }
 
     document.getElementById('rollBtn').addEventListener('click', async () => {
+      if (tapLocked()) return;
       await rollDiceAnimated();
     });
 
     document.getElementById('revealBtn').addEventListener('click', () => {
+      if (tapLocked()) return;
       renderDice();
       switchScreen('reveal');
     });
@@ -906,11 +922,13 @@
     });
 
     document.getElementById('passRollBtn').addEventListener('click', () => {
+      if (tapLocked() || !state.pendingRoll) return;
       commitPendingAsVisible();
       switchScreen('menu');
     });
 
     document.getElementById('decisionBlindRollBtn').addEventListener('click', () => {
+      if (tapLocked()) return;
       blindRollFromPending();
       switchScreen('menu');
     });
@@ -925,7 +943,7 @@
     });
 
     document.getElementById('diceConfirmBtn').addEventListener('click', () => {
-      if (!state.pendingRoll) return;
+      if (isRolling || tapLocked() || !state.pendingRoll) return;
       switchScreen('decision');
     });
 
@@ -947,6 +965,7 @@
     });
 
     document.getElementById('newRoundBtn').addEventListener('click', async () => {
+      if (tapLocked()) return;
       await rollDiceAnimated();
     });
 
