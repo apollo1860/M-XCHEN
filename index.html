@@ -714,7 +714,12 @@
     const scoreList = document.getElementById('scoreList');
 
     function save() {
-      localStorage.setItem('maexchenState', JSON.stringify(state));
+      try {
+        localStorage.setItem('maexchenState', JSON.stringify(state));
+      } catch (e) {
+        // z. B. Safari im privaten Modus: Speichern schlägt fehl, App läuft trotzdem weiter.
+        console.warn('Speicherstand konnte nicht gesichert werden.', e);
+      }
     }
 
     function load() {
@@ -727,6 +732,7 @@
           state.lastRoll = parsed.lastRoll;
           state.hasHiddenRoll = parsed.hasHiddenRoll ?? true;
           state.pendingRoll = parsed.pendingRoll ?? null;
+          state.currentScreen = parsed.currentScreen ?? 'menu';
         }
       } catch (e) {
         console.warn('Speicherstand konnte nicht geladen werden.', e);
@@ -849,17 +855,19 @@
     // Verhindert, dass ein "Geister-Klick" (verzögerter Touch-Klick auf manchen
     // Handys) direkt nach einem Bildschirmwechsel den Button darunter auslöst.
     function tapLocked() {
-      return Date.now() - lastScreenSwitch < 400;
+      return Date.now() - lastScreenSwitch < 600;
     }
 
     async function rollDiceAnimated() {
       if (isRolling) return;
       isRolling = true;
 
-      // Endergebnis sofort festlegen – angezeigt wird später genau dieser Wert.
+      // Endergebnis sofort festlegen und speichern – angezeigt wird später genau
+      // dieser Wert, auch wenn die Seite zwischendurch neu geladen wird.
       state.pendingRoll = sortDice(randomDie(), randomDie());
 
       switchScreen('dice');
+      save();
       dieLeft.classList.add('rolling');
       dieRight.classList.add('rolling');
 
@@ -925,12 +933,14 @@
       if (tapLocked() || !state.pendingRoll) return;
       commitPendingAsVisible();
       switchScreen('menu');
+      save();
     });
 
     document.getElementById('decisionBlindRollBtn').addEventListener('click', () => {
       if (tapLocked()) return;
       blindRollFromPending();
       switchScreen('menu');
+      save();
     });
 
     document.getElementById('toScoreFromRevealBtn').addEventListener('click', () => {
@@ -945,6 +955,7 @@
     document.getElementById('diceConfirmBtn').addEventListener('click', () => {
       if (isRolling || tapLocked() || !state.pendingRoll) return;
       switchScreen('decision');
+      save();
     });
 
     document.getElementById('scoreConfirmBtn').addEventListener('click', () => {
@@ -972,7 +983,18 @@
     load();
     renderDice();
     renderScores();
-    switchScreen('menu');
+
+    // Handys laden die Seite beim Weitergeben oft neu (Bildschirm gesperrt,
+    // App gewechselt, Tab vom Browser verworfen). Ein noch nicht entschiedener
+    // Wurf muss dann erhalten bleiben, statt verloren zu gehen.
+    if (state.pendingRoll) {
+      renderDie(dieLeft, state.pendingRoll[0]);
+      renderDie(dieRight, state.pendingRoll[1]);
+      switchScreen(state.currentScreen === 'decision' ? 'decision' : 'dice');
+    } else {
+      switchScreen('menu');
+    }
+    lastScreenSwitch = 0;
   </script>
 </body>
 </html>
